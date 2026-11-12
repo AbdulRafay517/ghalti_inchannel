@@ -151,3 +151,6 @@ vite.config.ts.timestamp-*
 # Next.js / Vercel
 next-env.d.ts
 .vercel
+
+# Local-only assets
+/assets/
