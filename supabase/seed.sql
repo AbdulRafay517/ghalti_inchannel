@@ -1,5 +1,5 @@
 insert into public.people (name, photo_path, side) values
-  ('Chappal Chor', 'photos/chappal.jpg', 'left'),
+  ('Chappal Chor', 'photos/chappal_2.jpg', 'left'),
   ('Kane', 'photos/kane.jpg', 'right');
 
 insert into public.excuses (text, audio_path, animation) values
