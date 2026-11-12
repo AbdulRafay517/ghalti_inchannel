@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ye Ghalti kis ki hai?",
+  title: "Ye Ghalti kis ki hai akhir?",
   description: "Blame counter",
 };
 
