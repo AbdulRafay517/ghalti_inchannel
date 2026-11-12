@@ -5,4 +5,5 @@ insert into public.people (name, photo_path, side) values
 insert into public.excuses (text, audio_path, animation) values
   ('Port ka masla hai...', 'audio/Port.m4a', null),
   (E'Aj bhi kiya hai\nAinda bhi karon ga', 'audio/Aj_bhi.m4a', null),
-  (null, 'audio/Ricksha.m4a', 'bicep_curl');
+  (null, 'audio/Ricksha.m4a', 'bicep_curl'),
+  (E'Hasseb Bhai,\nDo whatever you want', 'audio/DO_WHATEVER_YOU_WANT.m4a', null);
