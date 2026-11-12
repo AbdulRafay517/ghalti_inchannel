@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+body {
+  background: #ffffff;
+  color: #171717;
+}
+
+@theme {
+  --animate-curl: curl 1s step-end infinite;
+  --animate-flex: flex 1s step-end infinite;
+  --animate-pop: pop 0.2s ease-out;
+
+  @keyframes curl {
+    0%, 100% { transform: rotate(-110deg); }
+    50% { transform: rotate(0deg); }
+  }
+
+  @keyframes flex {
+    0%, 100% { transform: scaleY(1.2); }
+    50% { transform: scaleY(0.4); }
+  }
+
+  @keyframes pop {
+    from { transform: scale(0.6); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+}
