@@ -77,6 +77,7 @@ export default function BlameBoard({ left, right, excuses }: Props) {
   const [excuse, setExcuse] = useState<Excuse | null>(null);
   const [clicks, setClicks] = useState(0);
   const audio = useRef<HTMLAudioElement | null>(null);
+  const ctx = useRef<AudioContext | null>(null);
 
   async function blameLeft() {
     setBusy(true);
@@ -95,6 +96,12 @@ export default function BlameBoard({ left, right, excuses }: Props) {
     setClicks((c) => c + 1);
     audio.current?.pause();
     audio.current = new Audio(next.audioUrl);
+    // <audio>.volume caps at 1, so boost to 200% through a Web Audio gain node (needs CORS, which Supabase sends).
+    audio.current.crossOrigin = "anonymous";
+    ctx.current ??= new AudioContext();
+    const gain = new GainNode(ctx.current, { gain: 2 });
+    ctx.current.createMediaElementSource(audio.current).connect(gain).connect(ctx.current.destination);
+    void ctx.current.resume();
     audio.current.play().catch(() => setError("Couldn't play the audio."));
   }
 
