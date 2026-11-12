@@ -54,7 +54,7 @@ function Card({ person, count, label, onClick, disabled, bubble, tip }: {
       <h2 className="text-2xl font-semibold">{person.name}</h2>
       <div className="relative">
         <div className="relative w-64 h-64 overflow-hidden rounded-lg border-2 border-red-700">
-          <Image src={person.photoUrl} alt={person.name} fill sizes="256px" className="object-cover" />
+          <Image src={person.photoUrl} alt={person.name} fill sizes="256px" className="object-cover object-top" />
         </div>
         <div aria-live="polite" className="absolute -top-10 -left-10 z-10">{bubble}</div>
         {tip && (
