@@ -40,13 +40,14 @@ function Bubble({ excuse }: { excuse: Excuse }) {
   );
 }
 
-function Card({ person, count, label, onClick, disabled, bubble }: {
+function Card({ person, count, label, onClick, disabled, bubble, tip }: {
   person: Person;
   count: number;
   label: string;
   onClick: () => void;
   disabled?: boolean;
   bubble?: ReactNode;
+  tip?: string;
 }) {
   return (
     <div className="flex flex-col items-center gap-4 w-64">
@@ -56,6 +57,11 @@ function Card({ person, count, label, onClick, disabled, bubble }: {
           <Image src={person.photoUrl} alt={person.name} fill sizes="256px" className="object-cover" />
         </div>
         <div aria-live="polite" className="absolute -top-10 -left-10 z-10">{bubble}</div>
+        {tip && (
+          <p role="status" className="absolute inset-x-2 bottom-2 z-10 animate-pop rounded-md bg-black/80 px-2 py-1 text-center text-sm font-semibold text-yellow-300">
+            {tip}
+          </p>
+        )}
       </div>
       <p className="text-5xl font-bold tabular-nums" aria-label={`${person.name} count`}>{count}</p>
       <button
@@ -94,6 +100,7 @@ export default function BlameBoard({ left, right, excuses }: Props) {
     setError(null);
     setExcuse(next);
     setClicks((c) => c + 1);
+    void blameLeft(); // Kane's ghalti lands on Chappal Chor anyway
     audio.current?.pause();
     audio.current = new Audio(next.audioUrl);
     // <audio>.volume caps at 1, so boost to 200% through a Web Audio gain node (needs CORS, which Supabase sends).
@@ -116,6 +123,7 @@ export default function BlameBoard({ left, right, excuses }: Props) {
           onClick={blameRight}
           disabled={!excuses.length}
           bubble={excuse && <Bubble key={clicks} excuse={excuse} />}
+          tip={clicks > 0 && clicks % 2 === 0 ? "Kuch log apni ghalti ni maante" : undefined}
         />
       </div>
       {error && <p role="alert" className="text-red-300 text-sm">{error}</p>}
