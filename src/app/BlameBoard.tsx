@@ -30,7 +30,7 @@ function BicepCurl() {
 
 function Bubble({ excuse }: { excuse: Excuse }) {
   return (
-    <div className="relative max-w-56 origin-bottom-right animate-pop rounded-2xl border-2 border-black bg-white px-4 py-2 text-lg font-medium whitespace-pre-line shadow-md">
+    <div className="relative max-w-56 origin-bottom-right animate-pop rounded-2xl border-2 border-black bg-white px-4 py-2 text-neutral-900 text-lg font-medium whitespace-pre-line shadow-md">
       {excuse.animation === "bicep_curl" && (
         <BicepCurl />
       )}
@@ -52,7 +52,7 @@ function Card({ person, count, label, onClick, disabled, bubble }: {
     <div className="flex flex-col items-center gap-4 w-64">
       <h2 className="text-2xl font-semibold">{person.name}</h2>
       <div className="relative">
-        <div className="relative w-64 h-64 overflow-hidden rounded-lg border border-gray-200">
+        <div className="relative w-64 h-64 overflow-hidden rounded-lg border-2 border-red-700">
           <Image src={person.photoUrl} alt={person.name} fill sizes="256px" className="object-cover" />
         </div>
         <div aria-live="polite" className="absolute -top-10 -left-10 z-10">{bubble}</div>
@@ -62,7 +62,7 @@ function Card({ person, count, label, onClick, disabled, bubble }: {
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className="w-full rounded-lg bg-black text-white py-3 font-medium hover:bg-gray-800 disabled:opacity-50"
+        className="w-full rounded-lg bg-red-700 text-white py-3 font-medium hover:bg-red-600 disabled:opacity-50"
       >
         {label}
       </button>
@@ -106,7 +106,7 @@ export default function BlameBoard({ left, right, excuses }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-6">
+    <div className="relative z-10 flex flex-col items-center gap-6">
       <div className="flex flex-col sm:flex-row gap-12 sm:gap-24 items-center sm:items-start">
         <Card person={left} count={count} label="Ghalti +1" onClick={blameLeft} disabled={busy} />
         <Card
@@ -118,7 +118,7 @@ export default function BlameBoard({ left, right, excuses }: Props) {
           bubble={excuse && <Bubble key={clicks} excuse={excuse} />}
         />
       </div>
-      {error && <p role="alert" className="text-red-600 text-sm">{error}</p>}
+      {error && <p role="alert" className="text-red-300 text-sm">{error}</p>}
     </div>
   );
 }

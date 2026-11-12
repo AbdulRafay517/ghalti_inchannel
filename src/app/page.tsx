@@ -1,5 +1,6 @@
 import { mediaUrl, supabase } from "@/lib/supabase";
 import BlameBoard from "./BlameBoard";
+import Flames from "./Flames";
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +17,9 @@ export default async function Home() {
   if (!left || !right) throw new Error("Seed the people table with a 'left' and a 'right' row");
 
   return (
-    <main className="min-h-screen bg-white flex flex-col items-center px-4 py-12 gap-12">
-      <h1 className="text-4xl sm:text-5xl font-bold text-center">Ye Ghalti kis ki hai?</h1>
+    <main className="relative min-h-screen flex flex-col items-center px-4 pt-12 pb-48 gap-12">
+      <Flames />
+      <h1 className="relative z-10 text-4xl sm:text-5xl font-bold text-center drop-shadow-[0_0_12px_rgb(255_69_0)]">Ye Ghalti kis ki hai?</h1>
       <BlameBoard
         left={{ name: left.name, photoUrl: mediaUrl(left.photo_path), count: left.count }}
         right={{ name: right.name, photoUrl: mediaUrl(right.photo_path) }}
