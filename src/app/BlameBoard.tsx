@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { type ReactNode, useRef, useState } from "react";
 import { pickExcuse } from "@/lib/pickExcuse";
 import { supabase } from "@/lib/supabase";
+import { useProfile } from "@/lib/useProfile";
 
 type Person = { name: string; photoUrl: string };
 type Excuse = { id: number; text: string | null; animation: "bicep_curl" | null; audioUrl: string };
@@ -84,6 +86,8 @@ export default function BlameBoard({ left, right, excuses }: Props) {
   const [clicks, setClicks] = useState(0);
   const audio = useRef<HTMLAudioElement | null>(null);
   const ctx = useRef<AudioContext | null>(null);
+  const { loading, profile } = useProfile();
+  const canPress = !!profile?.active;
 
   async function blame(side: "left" | "right") {
     setBusy(true);
@@ -114,14 +118,27 @@ export default function BlameBoard({ left, right, excuses }: Props) {
 
   return (
     <div className="relative z-10 flex flex-col items-center gap-6">
+      {!loading && (
+        <nav className="flex gap-4 text-sm text-neutral-300">
+          {profile ? (
+            <>
+              <span>Logged in as <b className="text-white">{profile.username}</b>{!profile.active && " (disabled)"}</span>
+              {profile.role === "admin" && profile.active && <Link href="/admin" className="underline hover:text-white">Admin</Link>}
+              <button type="button" onClick={() => void supabase.auth.signOut()} className="underline hover:text-white">Logout</button>
+            </>
+          ) : (
+            <Link href="/login" className="underline hover:text-white">Login to blame someone</Link>
+          )}
+        </nav>
+      )}
       <div className="flex flex-col sm:flex-row gap-12 sm:gap-24 items-center sm:items-start">
-        <Card person={left} count={counts.left} label="Ghalti +1" onClick={() => void blame("left")} disabled={busy} />
+        <Card person={left} count={counts.left} label="Ghalti +1" onClick={() => void blame("left")} disabled={busy || !canPress} />
         <Card
           person={right}
           count={counts.right}
           label="Ghalti +1"
           onClick={blameRight}
-          disabled={busy || !excuses.length}
+          disabled={busy || !canPress || !excuses.length}
           bubble={excuse && <Bubble key={clicks} excuse={excuse} />}
           tip={clicks > 0 && clicks % 2 === 0 ? "Kuch log apni ghalti ni maante" : undefined}
         />
