@@ -22,7 +22,7 @@ export default async function Home() {
       <h1 className="relative z-10 text-4xl sm:text-5xl font-bold text-center drop-shadow-[0_0_12px_rgb(255_69_0)]">Ye Ghalti kis ki hai akhir?</h1>
       <BlameBoard
         left={{ name: left.name, photoUrl: mediaUrl(left.photo_path), count: left.count }}
-        right={{ name: right.name, photoUrl: mediaUrl(right.photo_path) }}
+        right={{ name: right.name, photoUrl: mediaUrl(right.photo_path), count: right.count }}
         excuses={excuses.data.map((e) => ({ id: e.id, text: e.text, animation: e.animation, audioUrl: mediaUrl(e.audio_path) }))}
       />
     </main>

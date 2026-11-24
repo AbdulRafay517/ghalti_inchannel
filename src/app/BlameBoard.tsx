@@ -10,7 +10,7 @@ type Excuse = { id: number; text: string | null; animation: "bicep_curl" | null;
 
 type Props = {
   left: Person & { count: number };
-  right: Person;
+  right: Person & { count: number };
   excuses: Excuse[];
 };
 
@@ -77,7 +77,7 @@ function Card({ person, count, label, onClick, disabled, bubble, tip }: {
 }
 
 export default function BlameBoard({ left, right, excuses }: Props) {
-  const [count, setCount] = useState(left.count);
+  const [counts, setCounts] = useState({ left: left.count, right: right.count });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [excuse, setExcuse] = useState<Excuse | null>(null);
@@ -85,12 +85,12 @@ export default function BlameBoard({ left, right, excuses }: Props) {
   const audio = useRef<HTMLAudioElement | null>(null);
   const ctx = useRef<AudioContext | null>(null);
 
-  async function blameLeft() {
+  async function blame(side: "left" | "right") {
     setBusy(true);
     setError(null);
-    const { data, error } = await supabase.rpc("increment_blame");
+    const { data, error } = await supabase.rpc("increment_blame", { target: side });
     if (error) setError("Count update failed, try again.");
-    else setCount(data as number);
+    else setCounts((c) => ({ ...c, [side]: data as number }));
     setBusy(false);
   }
 
@@ -100,7 +100,7 @@ export default function BlameBoard({ left, right, excuses }: Props) {
     setError(null);
     setExcuse(next);
     setClicks((c) => c + 1);
-    void blameLeft(); // Kane's ghalti lands on Chappal Chor anyway
+    void blame("right");
     audio.current?.pause();
     audio.current = new Audio(next.audioUrl);
     // <audio>.volume caps at 1, so boost to 200% through a Web Audio gain node (needs CORS, which Supabase sends).
@@ -115,13 +115,13 @@ export default function BlameBoard({ left, right, excuses }: Props) {
   return (
     <div className="relative z-10 flex flex-col items-center gap-6">
       <div className="flex flex-col sm:flex-row gap-12 sm:gap-24 items-center sm:items-start">
-        <Card person={left} count={count} label="Ghalti +1" onClick={blameLeft} disabled={busy} />
+        <Card person={left} count={counts.left} label="Ghalti +1" onClick={() => void blame("left")} disabled={busy} />
         <Card
           person={right}
-          count={0}
+          count={counts.right}
           label="Ghalti +1"
           onClick={blameRight}
-          disabled={!excuses.length}
+          disabled={busy || !excuses.length}
           bubble={excuse && <Bubble key={clicks} excuse={excuse} />}
           tip={clicks > 0 && clicks % 2 === 0 ? "Kuch log apni ghalti ni maante" : undefined}
         />
