@@ -7,7 +7,8 @@ type Body =
   | { action: "reset_password"; id: string; password: string }
   | { action: "set_active"; id: string; active: boolean }
   | { action: "set_role"; id: string; role: Role }
-  | { action: "delete"; id: string };
+  | { action: "delete"; id: string }
+  | { action: "set_count"; side: "left" | "right"; count: number };
 
 const fail = (status: number, error: string) => NextResponse.json({ error }, { status });
 const isRole = (r: unknown): r is Role => r === "user" || r === "admin";
@@ -30,7 +31,20 @@ async function createUser(me: Profile, { username, password, role }: Extract<Bod
   return NextResponse.json({ ok: true });
 }
 
-async function changeUser(me: Profile, body: Exclude<Body, { action: "create" }>) {
+async function setCount(me: Profile, { side, count }: Extract<Body, { action: "set_count" }>) {
+  if (side !== "left" && side !== "right") return fail(400, "Invalid side");
+  // people.count is a Postgres int
+  if (!Number.isInteger(count) || count < -2147483648 || count > 2147483647) return fail(400, "Count must be a whole number");
+  const db = adminClient();
+  const { data: before } = await db.from("people").select("name, count").eq("side", side).maybeSingle<{ name: string; count: number }>();
+  if (!before) return fail(404, "Person not found");
+  const { error } = await db.from("people").update({ count }).eq("side", side);
+  if (error) return fail(400, error.message);
+  await audit(me, "count.set", before.name, { side, from: before.count, to: count });
+  return NextResponse.json({ ok: true });
+}
+
+async function changeUser(me: Profile, body: Exclude<Body, { action: "create" | "set_count" }>) {
   const db = adminClient();
   const { data: target } = await db.from("profiles").select("*").eq("id", body.id).maybeSingle<Profile>();
   if (!target) return fail(404, "User not found");
@@ -79,7 +93,9 @@ export async function POST(req: Request) {
     const me = await requireAdmin(req);
     if (!me) return fail(403, "Admins only");
     const body = (await req.json()) as Body;
-    return body.action === "create" ? await createUser(me, body) : await changeUser(me, body);
+    if (body.action === "create") return await createUser(me, body);
+    if (body.action === "set_count") return await setCount(me, body);
+    return await changeUser(me, body);
   } catch (e) {
     console.error("admin users route failed", e);
     return fail(500, "Something went wrong");

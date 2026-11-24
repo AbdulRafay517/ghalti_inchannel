@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/lib/useProfile";
 import type { Profile } from "@/lib/users";
 
+type Person = { side: "left" | "right"; name: string; count: number };
 type AuditRow = { id: number; at: string; actor_username: string; action: string; target: string | null; details: Record<string, unknown> };
 
 const input = "rounded-md bg-neutral-900 border border-neutral-600 px-3 py-2";
@@ -15,16 +16,19 @@ export default function AdminPage() {
   const { loading, session, profile: me } = useProfile();
   const [users, setUsers] = useState<Profile[]>([]);
   const [log, setLog] = useState<AuditRow[]>([]);
+  const [people, setPeople] = useState<Person[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const isAdmin = me?.role === "admin" && me.active;
 
   const reload = useCallback(async () => {
-    const [u, a] = await Promise.all([
+    const [u, a, p] = await Promise.all([
       supabase.from("profiles").select("*").order("username"),
       supabase.from("audit_log").select("*").order("at", { ascending: false }).limit(200),
+      supabase.from("people").select("side, name, count").order("side"),
     ]);
-    if (u.error || a.error) setError("Couldn't load users or the audit log.");
+    if (u.error || a.error || p.error) setError("Couldn't load users, counts or the audit log.");
+    setPeople((p.data as Person[]) ?? []);
     setUsers((u.data as Profile[]) ?? []);
     setLog((a.data as AuditRow[]) ?? []);
   }, []);
@@ -54,6 +58,11 @@ export default function AdminPage() {
     const f = new FormData(form);
     const ok = await call({ action: "create", username: f.get("username"), password: f.get("password"), role: f.get("role") });
     if (ok) form.reset();
+  }
+
+  function setCount(e: SubmitEvent<HTMLFormElement>, side: Person["side"]) {
+    e.preventDefault();
+    void call({ action: "set_count", side, count: Number(new FormData(e.currentTarget).get("count")) });
   }
 
   function resetPassword(u: Profile) {
@@ -86,6 +95,22 @@ export default function AdminPage() {
       </header>
 
       {error && <p role="alert" className="rounded-md bg-red-950 px-3 py-2 text-red-200">{error}</p>}
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-xl font-semibold">Counts</h2>
+        <div className="flex flex-wrap gap-6">
+          {people.map((p) => (
+            // key includes count so the box resets to the saved value after each change
+            <form key={`${p.side}-${p.count}`} onSubmit={(e) => setCount(e, p.side)} className="flex items-end gap-3">
+              <label className="flex flex-col gap-1 text-sm">
+                {p.name} <span className="text-neutral-400">(now {p.count})</span>
+                <input name="count" type="number" step={1} required defaultValue={p.count} className={`${input} w-32`} />
+              </label>
+              <button type="submit" disabled={busy} className="rounded-lg bg-red-700 px-4 py-2 font-medium hover:bg-red-600 disabled:opacity-50">Set</button>
+            </form>
+          ))}
+        </div>
+      </section>
 
       <section className="flex flex-col gap-4">
         <h2 className="text-xl font-semibold">Create user</h2>
